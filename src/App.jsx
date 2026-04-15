@@ -252,10 +252,19 @@ function App() {
                 <TrustBanner />
 
                 <div className="space-y-4">
-                  {Object.values(estimates).map((estimate) => (
+                  {Object.entries(estimates).map(([key, estimate]) => (
                     <ProviderCard
-                      key={estimate.provider.id}
-                      estimate={estimate}
+                      key={key}
+                      estimate={{
+                        ...estimate,
+                        provider: {
+                          name: estimate.label,
+                          logo: estimate.icon,
+                          deepLinkBase: '',
+                          webFallback: '',
+                          brandColor: estimate.label === 'Uber Go' ? '#000000' : estimate.label === 'Ola Mini' ? '#06B05F' : estimate.label === 'Rapido Bike' ? '#FFD700' : '#FFA500'
+                        }
+                      }}
                       isWinner={!!estimate.badge}
                     />
                   ))}

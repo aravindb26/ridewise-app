@@ -1,18 +1,31 @@
 import React from 'react';
 
 const ProviderCard = ({ estimate, isWinner }) => {
-  const { provider, priceMin, priceMax, etaMin, etaMax, badge, isEstimated, isSurge, surgeMultiplier } = estimate;
-
-  const handleBooking = () => {
-    // Simulate deep link
-    alert(`Opening ${provider.name} app...\n\nDeep link: ${provider.deepLinkBase}\nFallback: ${provider.webFallback}`);
-    // In production: window.location.href = provider.deepLinkBase or provider.webFallback
-  };
+  const { label, icon, priceMin, priceMax, etaMin, etaMax, badge, surge } = estimate;
 
   const badgeColors = {
     Cheapest: 'bg-accent-green text-white',
     Fastest: 'bg-accent-orange text-white',
-    'Most bikes': 'bg-accent-blue text-white',
+  };
+
+  const brandColors = {
+    'Uber Go': '#000000',
+    'Ola Mini': '#06B05F',
+    Auto: '#FF6B00',
+    'Rapido Bike': '#FFD700',
+  };
+
+  const handleOpenApp = () => {
+    // Opens provider app with route (deep link would go here)
+    const name = label.split(' ')[0].toLowerCase();
+    const urls = {
+      uber: 'https://m.uber.com',
+      ola: 'https://book.olacabs.com',
+      auto: 'https://m.uber.com',
+      rapido: 'https://www.rapido.bike',
+    };
+    const url = urls[name] || '/';
+    window.open(url, '_blank');
   };
 
   return (
@@ -23,9 +36,9 @@ const ProviderCard = ({ estimate, isWinner }) => {
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-3">
-          <span className="text-3xl">{provider.logo}</span>
+          <span className="text-3xl">{icon}</span>
           <h3 className="text-lg font-bold text-neutral-text-primary">
-            {provider.name}
+            {label}
           </h3>
         </div>
         {badge && (
@@ -49,24 +62,22 @@ const ProviderCard = ({ estimate, isWinner }) => {
       </div>
 
       <div className="flex items-center space-x-2 mb-4">
-        {isEstimated && (
-          <span className="px-2 py-1 rounded bg-status-estimated text-neutral-text-secondary text-xs font-medium flex items-center">
-            <span className="mr-1">~</span> Estimated
-          </span>
-        )}
-        {isSurge && (
+        <span className="px-2 py-1 rounded bg-status-estimated text-neutral-text-secondary text-xs font-medium flex items-center">
+          <span className="mr-1">~</span> Estimated
+        </span>
+        {surge && (
           <span className="px-2 py-1 rounded bg-status-warning/20 text-status-warning text-xs font-medium flex items-center">
-            <span className="mr-1">🔥</span> Surge +{Math.round((surgeMultiplier - 1) * 100)}%
+            <span className="mr-1">🔥</span> Surge +{Math.round((surge.multiplier - 1) * 100)}%
           </span>
         )}
       </div>
 
       <button
-        onClick={handleBooking}
-        style={{ backgroundColor: provider.brandColor }}
+        onClick={handleOpenApp}
+        style={{ backgroundColor: brandColors[label] || '#0F83C0' }}
         className="w-full py-3 rounded-lg text-white font-bold hover:opacity-90 transition-opacity flex items-center justify-center space-x-2"
       >
-        <span>Book on {provider.name}</span>
+        <span>Check {label}</span>
         <span>→</span>
       </button>
     </div>

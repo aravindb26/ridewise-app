@@ -88,20 +88,60 @@ function detectSurge() {
 }
 
 function calculatePricing(distance, duration, surge) {
+  // Bangalore real-world rates (2025/2026) - per ride category
   const providers = {
-    ola: { baseFare: 40, perKmRate: 12, perMinRate: 1.5, platformFee: 5, variability: 0.15 },
-    uber: { baseFare: 35, perKmRate: 14, perMinRate: 2, platformFee: 10, variability: 0.12 },
-    rapido: { baseFare: 20, perKmRate: 7, perMinRate: 0.5, platformFee: 0, variability: 0.10 }
+    uber_go: {
+      label: 'Uber Go',
+      icon: '⚫',
+      baseFare: 49,
+      perKmRate: 10,
+      perMinRate: 2,
+      minFare: 65,
+      platformFee: 14,
+      variability: 0.08
+    },
+    ola_mini: {
+      label: 'Ola Mini',
+      icon: '🟢',
+      baseFare: 40,
+      perKmRate: 9,
+      perMinRate: 1.8,
+      minFare: 55,
+      platformFee: 10,
+      variability: 0.10
+    },
+    auto: {
+      label: 'Auto',
+      icon: '🟠',
+      baseFare: 30,
+      perKmRate: 18,
+      perMinRate: 0.8,
+      minFare: 40,
+      platformFee: 0,
+      variability: 0.05
+    },
+    rapido_bike: {
+      label: 'Rapido Bike',
+      icon: '🟡',
+      baseFare: 15,
+      perKmRate: 5,
+      perMinRate: 0.4,
+      minFare: 30,
+      platformFee: 0,
+      variability: 0.06
+    }
   };
 
   const estimates = {};
   
-  Object.keys(providers).forEach(provider => {
-    const config = providers[provider];
+  Object.entries(providers).forEach(([key, config]) => {
     let basePrice = config.baseFare + (distance * config.perKmRate) + (duration * config.perMinRate) + config.platformFee;
+    basePrice = Math.max(basePrice, config.minFare);
     basePrice *= surge.multiplier;
     
-    estimates[provider] = {
+    estimates[key] = {
+      label: config.label,
+      icon: config.icon,
       priceMin: Math.round(basePrice * (1 - config.variability)),
       priceMax: Math.round(basePrice * (1 + config.variability)),
       etaMin: Math.floor(duration * 0.8),

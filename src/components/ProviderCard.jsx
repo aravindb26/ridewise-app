@@ -1,30 +1,26 @@
 import React from 'react';
 
 const ProviderCard = ({ estimate, isWinner }) => {
-  const { label, icon, priceMin, priceMax, etaMin, etaMax, badge, surge } = estimate;
+  const { provider, priceMin, priceMax, etaMin, etaMax, badge, surge } = estimate;
+
+  const name = provider?.name || 'Unknown';
+  const logo = provider?.logo || '🚗';
+  const brandColor = provider?.brandColor || '#0F83C0';
 
   const badgeColors = {
     Cheapest: 'bg-accent-green text-white',
     Fastest: 'bg-accent-orange text-white',
   };
 
-  const brandColors = {
-    'Uber Go': '#000000',
-    'Ola Mini': '#06B05F',
-    Auto: '#FF6B00',
-    'Rapido Bike': '#FFD700',
-  };
-
   const handleOpenApp = () => {
-    // Opens provider app with route (deep link would go here)
-    const name = label.split(' ')[0].toLowerCase();
+    const key = name.toLowerCase().replace(/\s/g, '');
     const urls = {
-      uber: 'https://m.uber.com',
-      ola: 'https://book.olacabs.com',
+      ubergo: 'https://m.uber.com',
+      olamini: 'https://book.olacabs.com',
       auto: 'https://m.uber.com',
-      rapido: 'https://www.rapido.bike',
+      rapidobike: 'https://www.rapido.bike',
     };
-    const url = urls[name] || '/';
+    const url = urls[key] || '/';
     window.open(url, '_blank');
   };
 
@@ -36,9 +32,9 @@ const ProviderCard = ({ estimate, isWinner }) => {
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-3">
-          <span className="text-3xl">{icon}</span>
+          <span className="text-3xl">{logo}</span>
           <h3 className="text-lg font-bold text-neutral-text-primary">
-            {label}
+            {name}
           </h3>
         </div>
         {badge && (
@@ -74,10 +70,10 @@ const ProviderCard = ({ estimate, isWinner }) => {
 
       <button
         onClick={handleOpenApp}
-        style={{ backgroundColor: brandColors[label] || '#0F83C0' }}
+        style={{ backgroundColor: brandColor }}
         className="w-full py-3 rounded-lg text-white font-bold hover:opacity-90 transition-opacity flex items-center justify-center space-x-2"
       >
-        <span>Check {label}</span>
+        <span>Check {name}</span>
         <span>→</span>
       </button>
     </div>

@@ -1,9 +1,10 @@
 import React from 'react';
 
-const ProviderCard = ({ estimate, isWinner }) => {
+const ProviderCard = ({ estimate, pickup, destination, isWinner }) => {
   const name = estimate.provider?.name || estimate.label || 'Unknown';
   const logo = estimate.provider?.logo || estimate.icon || '🚗';
   const brandColor = estimate.provider?.brandColor || '#276EF1';
+  const webFallback = estimate.provider?.webFallback || 'https://m.uber.com';
 
   const priceMin = estimate.priceMin;
   const priceMax = estimate.priceMax;
@@ -18,14 +19,25 @@ const ProviderCard = ({ estimate, isWinner }) => {
   };
 
   const handleOpenApp = () => {
-    const key = name.toLowerCase().replace(/\s/g, '');
-    const urls = {
-      'ubergo': 'https://m.uber.com',
-      'olamini': 'https://book.olacabs.com',
-      'auto': 'https://m.uber.com',
-      'rapidobike': 'https://www.rapido.bike',
-    };
-    const url = urls[key] || '/';
+    if (!pickup || !destination) {
+      window.open(webFallback, '_blank');
+      return;
+    }
+
+    const pu = pickup;
+    const dest = destination;
+    let url;
+
+    if (name.includes('Uber')) {
+      url = `https://m.uber.com/looking?pickup[latitude]=${pu.lat}&pickup[longitude]=${pu.lng}&dropoff[latitude]=${dest.lat}&dropoff[longitude]=${dest.lng}`;
+    } else if (name.includes('Ola')) {
+      url = `https://book.olacabs.com/?serviceType=p2p&lat=${pu.lat}&lng=${pu.lng}&drop_lat=${dest.lat}&drop_lng=${dest.lng}`;
+    } else if (name.includes('Rapido')) {
+      url = `https://www.rapido.bike/ride?pickup_lat=${pu.lat}&pickup_lng=${pu.lng}&drop_lat=${dest.lat}&drop_lng=${dest.lng}`;
+    } else {
+      url = webFallback;
+    }
+
     window.open(url, '_blank');
   };
 

@@ -256,6 +256,8 @@ function App() {
                     <ProviderCard
                       key={key}
                       estimate={estimate}
+                      pickup={pickup}
+                      destination={destination}
                       isWinner={!!estimate.badge}
                     />
                   ))}

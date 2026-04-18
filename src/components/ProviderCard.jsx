@@ -1,82 +1,71 @@
 import React from 'react';
 
-const ProviderCard = ({ estimate, pickup, destination, isWinner }) => {
-  const name = estimate.provider?.name || estimate.label || 'Unknown';
-  const logo = estimate.provider?.logo || estimate.icon || '🚗';
-  const brandColor = estimate.provider?.brandColor || '#276EF1';
-  const webFallback = estimate.provider?.webFallback || 'https://m.uber.com';
+export default function ProviderCard({ estimate, pickup, destination, isWinner }) {
+  const { provider, priceMin, priceMax, etaMin, etaMax, badge, surge } = estimate;
+  const name = provider?.name || estimate.label || 'Unknown';
+  const logo = provider?.logo || estimate.icon || '🚗';
+  const brandColor = provider?.brandColor || '#0F62FE';
+  const deepLink = provider?.deepLinkBase;
+  const webFallback = provider?.webFallback;
 
-  const priceMin = estimate.priceMin;
-  const priceMax = estimate.priceMax;
-  const etaMin = estimate.etaMin;
-  const etaMax = estimate.etaMax;
-  const badge = estimate.badge;
-  const surge = estimate.surge;
-
-  const badgeColors = {
-    Cheapest: 'bg-accent-green text-white',
-    Fastest: 'bg-accent-orange text-white',
-  };
+  const badgeLabel = { Cheapest: 'Cheapest', Fastest: 'Fastest' };
+  const badgeCls = { Cheapest: 'badge badge-green', Fastest: 'badge badge-orange' }[badge] || '';
 
   const handleOpenApp = () => {
     if (!pickup || !destination) {
-      window.open(webFallback, '_blank');
+      window.open(webFallback || '/', '_blank');
       return;
     }
-
-    const pu = pickup;
-    const dest = destination;
-    let url;
+    const { lat: pl, lng: pLng } = pickup;
+    const { lat: dl, lng: dLng } = destination;
 
     if (name.includes('Uber')) {
-      url = `https://m.uber.com/looking?pickup[latitude]=${pu.lat}&pickup[longitude]=${pu.lng}&dropoff[latitude]=${dest.lat}&dropoff[longitude]=${dest.lng}`;
+      window.open(`https://m.uber.com/looking/pickup?setLat=${dl}&setLng=${dLng}&pickup[latitude]=${pl}&pickup[longitude]=${pLng}&dropoff[latitude]=${dl}&dropoff[longitude]=${dLng}`, '_blank');
     } else if (name.includes('Ola')) {
-      url = `https://book.olacabs.com/?serviceType=p2p&lat=${pu.lat}&lng=${pu.lng}&drop_lat=${dest.lat}&drop_lng=${dest.lng}`;
+      window.open(`https://book.olacabs.com/?lat=${pl}&lng=${pLng}&drop_lat=${dl}&drop_lng=${dLng}`, '_blank');
     } else if (name.includes('Rapido')) {
-      url = `https://www.rapido.bike/ride?pickup_lat=${pu.lat}&pickup_lng=${pu.lng}&drop_lat=${dest.lat}&drop_lng=${dest.lng}`;
+      window.open(`https://www.rapido.bike/ride?pickup_lat=${pl}&pickup_lng=${pLng}&drop_lat=${dl}&drop_lng=${dLng}`, '_blank');
     } else {
-      url = webFallback;
+      window.open(deepLink || '/route?lat=${pl}&lng=${pLng}&dl=${dl}&dlng=${dLng}', '_blank');
     }
-
-    window.open(url, '_blank');
   };
 
   return (
-    <div className={`bg-white rounded-xl p-5 shadow-card hover:shadow-card-hover transition-all ${isWinner ? 'border-2 border-primary' : 'border border-neutral-border'}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-3">
-          <span className="text-3xl">{logo}</span>
-          <h3 className="text-lg font-bold text-neutral-text-primary">{name}</h3>
+    <div className={`provider-card relative ${isWinner ? 'ring-2 ring-primary ring-offset-2' : ''} fade-in`}>
+      {/* Cheapest/Fastest badge */}
+      {badge && (
+        <div className="absolute -top-3 right-4">
+          <span className={badgeCls}>{badgeLabel[badge] || badge}</span>
         </div>
-        {badge && (
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${badgeColors[badge] || 'bg-gray-200 text-gray-800'}`}>
-            {badge}
-          </span>
-        )}
+      )}
+
+      {/* Left: logo + name */}
+      <div className="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
+           style={{ backgroundColor: brandColor + '15' }}>
+        {logo}
       </div>
 
-      <div className="mb-3">
-        <div className="text-3xl font-bold text-neutral-text-primary">₹{priceMin} - ₹{priceMax}</div>
-        <div className="text-base text-neutral-text-secondary mt-1">ETA: {etaMin}-{etaMax} min</div>
-      </div>
-
-      <div className="flex items-center space-x-2 mb-4">
-        <span className="px-2 py-1 rounded bg-status-estimated text-neutral-text-secondary text-xs font-medium">~ Estimated</span>
+      {/* Middle: details */}
+      <div className="flex-1 min-w-0">
+        <div className="text-base font-bold">{name}</div>
+        <div className="flex items-center gap-3 mt-1">
+          <span className="text-sm font-semibold">₹{priceMin} – ₹{priceMax}</span>
+          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span className="text-sm text-text-secondary">{etaMin}–{etaMax} min</span>
+        </div>
         {surge && (
-          <span className="px-2 py-1 rounded bg-status-warning/20 text-status-warning text-xs font-medium">🔥 Surge +{Math.round((surge.multiplier - 1) * 100)}%</span>
+          <div className="flex items-center gap-1 text-xs text-accent-orange font-semibold mt-1">
+            🔥 Surge +{Math.round((surge.multiplier - 1) * 100)}%
+          </div>
         )}
       </div>
 
-      <button
-        onClick={handleOpenApp}
-        style={{ backgroundColor: brandColor }}
-        className="w-full py-3 rounded-lg text-white font-bold hover:opacity-90 transition-opacity flex items-center justify-center space-x-2"
-      >
-        <span>Check {name}</span>
-        <span>→</span>
+      {/* Right: CTA */}
+      <button onClick={handleOpenApp}
+              className="flex-shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm text-white hover:opacity-90 transition active:scale-95"
+              style={{ backgroundColor: brandColor }}>
+        Check Price →
       </button>
     </div>
   );
-};
-
-export default ProviderCard;
+}

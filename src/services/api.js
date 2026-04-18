@@ -1,54 +1,32 @@
 // RideWise API Service
-// Connects frontend to backend for real-time estimates
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const rideWiseAPI = {
-  /**
-   * Get ride estimates from backend
-   * @param {Object} pickup - { lat, lng, name, address }
-   * @param {Object} destination - { lat, lng, name, address }
-   * @returns {Promise<Object>} Estimates for all providers
-   */
   async getEstimates(pickup, destination) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/estimate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pickup, destination }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
 
       const data = await response.json();
-      
-      // Transform backend response to frontend format
       return {
         success: true,
         route: data.route,
         estimates: transformEstimates(data.estimates),
         surge: data.surge,
         isLive: !data.route.isFallback,
-        timestamp: data.timestamp
+        timestamp: data.timestamp,
       };
     } catch (error) {
       console.error('API call failed:', error);
-      // Return fallback data if backend is unavailable
-      return {
-        success: false,
-        error: error.message,
-        useFallback: true
-      };
+      return { success: false, error: error.message, useFallback: true };
     }
   },
 
-  /**
-   * Health check
-   */
   async checkHealth() {
     try {
       const response = await fetch(`${API_BASE_URL}/health`);
@@ -56,12 +34,39 @@ export const rideWiseAPI = {
     } catch (error) {
       return { status: 'error', error: error.message };
     }
-  }
+  },
+
+  // Google Places autocomplete suggestions
+  async autocomplete(input, sessionToken) {
+    const response = await fetch(
+      `${API_BASE_URL}/api/places/autocomplete?input=${encodeURIComponent(input)}` +
+        (sessionToken ? `&sessionToken=${sessionToken}` : ''),
+      { headers: { Accept: 'application/json' } }
+    );
+    const data = await response.json();
+    return data.predictions || [];
+  },
+
+  // Get place details (lat, lng, name)
+  async getPlaceDetails(placeId, sessionToken) {
+    const response = await fetch(
+      `${API_BASE_URL}/api/places/details?place_id=${placeId}` +
+        (sessionToken ? `&sessionToken=${sessionToken}` : ''),
+      { headers: { Accept: 'application/json' } }
+    );
+    const data = await response.json();
+    if (data.result?.geometry) {
+      return {
+        lat: data.result.geometry.location.lat,
+        lng: data.result.geometry.location.lng,
+        name: data.result.name || data.result.formatted_address,
+        address: data.result.formatted_address,
+      };
+    }
+    return null;
+  },
 };
 
-/**
- * Transform backend estimates to frontend format
- */
 function transformEstimates(backendEstimates) {
   const providers = {
     uber_auto: {
@@ -100,7 +105,7 @@ function transformEstimates(backendEstimates) {
 
   const transformed = {};
 
-  Object.keys(backendEstimates).forEach(providerKey => {
+  Object.keys(backendEstimates).forEach((providerKey) => {
     const estimate = backendEstimates[providerKey];
     transformed[providerKey] = {
       provider: providers[providerKey] || {
@@ -117,7 +122,7 @@ function transformEstimates(backendEstimates) {
       isEstimated: false,
       isSurge: !!estimate.surge,
       surgeMultiplier: estimate.surge ? estimate.surge.multiplier : 1.0,
-      surgeReason: estimate.surge ? estimate.surge.reason : null
+      surgeReason: estimate.surge ? estimate.surge.reason : null,
     };
   });
 

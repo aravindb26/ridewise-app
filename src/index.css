@@ -1,43 +1,111 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ===== RideWise — Modern CSS (2026) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #FAFAFA;
-  margin: 0;
-  padding: 0;
+/* ── Tailwind v4 config ── */
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-primary: #0F62FE;
+  --color-primary-dark: #0043CE;
+  --color-primary-light: #D0E2FF;
+  --color-surface: #FFFFFF;
+  --color-bg: #F5F7FA;
+  --color-text: #1A1D21;
+  --color-text-secondary: #5F6D7E;
+  --color-text-muted: #8B96A5;
+  --color-border: #E8ECF1;
+  --color-accent-green: #00B67A;
+  --color-accent-orange: #FF8C00;
+  --color-radius-sm: 8px;
+  --color-radius-md: 12px;
+  --color-radius-lg: 16px;
+  --color-radius-xl: 24px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* ── Base reset ── */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--font-sans); background: var(--color-bg); color: var(--color-text); -webkit-font-smoothing: antialiased; }
+
+/* ── Glass card ── */
+.glass-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--color-radius-lg);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
 }
 
-::-webkit-scrollbar-track {
-  background: #F3F4F6;
+/* ── Input ── */
+.input-field {
+  width:100%; padding:12px 16px; border-radius:var(--color-radius-md);
+  background:#F8FAFC; border:2px solid transparent; outline:none;
+  font-size:15px; font-weight:500; color:var(--color-text);
+  transition: all .2s;
+}
+.input-field:focus { background:#fff; border-color:var(--color-primary); box-shadow:0 0 0 3px var(--color-primary-light); }
+.input-field::placeholder { color:var(--color-text-muted); }
+
+/* ── Buttons ── */
+.btn-primary {
+  width:100%; padding:14px; border-radius:var(--color-radius-md);
+  background:linear-gradient(135deg, var(--color-primary) 0%, #6B46FF 100%);
+  color:#fff; font-size:16px; font-weight:700; border:none; cursor:pointer;
+  transition:transform .15s, box-shadow .15s;
+}
+.btn-primary:hover { box-shadow:0 6px 24px rgba(15,98,254,0.35); transform:translateY(-2px); }
+.btn-primary:active { transform:scale(0.98); }
+.btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+
+/* ── Dropdown menu ── */
+.dropdown {
+  position:absolute; top:calc(100% + 4px); left:0; right:0;
+  background:#fff; border:1px solid var(--color-border);
+  border-radius:var(--color-radius-md); box-shadow:0 12px 40px rgba(0,0,0,0.12);
+  max-height:260px; overflow-y:auto; z-index:50;
+}
+.dropdown-item {
+  display:flex; gap:12px; padding:12px 16px; border:none; background:none;
+  width:100%; text-align:left; cursor:pointer; border-bottom:1px solid #f0f0f0;
+  transition:background .15s;
+}
+.dropdown-item:hover { background:#F5F7FA; }
+.dropdown-item:last-child { border-bottom:none; }
+.dropdown-item-main { font-size:14px; font-weight:600; color:var(--color-text); }
+.dropdown-item-sub  { font-size:12px; color:var(--color-text-muted); margin-top:2px; }
+
+/* ── Provider card ── */
+.provider-card {
+  display:flex; align-items:center; gap:16px; padding:16px;
+  background:#fff; border-radius:var(--color-radius-lg);
+  border:1px solid var(--color-border); transition:all .2s;
+}
+.provider-card:hover { border-color:var(--color-primary); box-shadow:0 4px 16px rgba(15,98,254,0.08); }
+.provider-card.winner { border:2px solid var(--color-primary); box-shadow:0 4px 16px rgba(15,98,254,0.12); }
+
+/* ── Badge ── */
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:700; }
+.badge-green { background:rgba(0,182,122,0.1); color:var(--color-accent-green); }
+.badge-orange { background:rgba(255,140,0,0.1); color:var(--color-accent-orange); }
+
+/* ── Loading dots ── */
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.loading-dot span { display:inline-block; width:8px; height:8px; background:var(--color-primary); border-radius:50%; margin:0 4px; animation:bounce .6s infinite alternate; }
+.loading-dot span:nth-child(2) { animation-delay:.15s }
+.loading-dot span:nth-child(3) { animation-delay:.3s }
+
+/* ── Fade-in animation ── */
+@keyframes fadeInUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+.fade-in { animation:fadeInUp .4s ease-out both; }
+.fade-in-delay-1 { animation-delay:.1s }
+.fade-in-delay-2 { animation-delay:.2s }
+.fade-in-delay-3 { animation-delay:.3s }
+
+/* ── Map container ── */
+.map-frame {
+  width:100%; height:100%; min-height:320px; border-radius:var(--color-radius-lg); overflow:hidden;
+  border:1px solid var(--color-border);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
-}
-
-/* Smooth transitions */
-* {
-  transition: all 0.2s ease-in-out;
-}
-
-button {
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-button:active {
-  transform: scale(0.98);
-}
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--color-border); border-radius:99px; }

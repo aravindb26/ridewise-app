@@ -98,7 +98,7 @@ function calculatePricing(distance, duration, surge) {
       minFare: 45,
       platformFee: 10,
       variability: 0.06,
-      bias: 0.63
+      bias: 0.62
     },
     uber_go: {
       label: 'Uber Go',
@@ -109,7 +109,7 @@ function calculatePricing(distance, duration, surge) {
       minFare: 60,
       platformFee: 15,
       variability: 0.06,
-      bias: 0.78
+      bias: 1.15
     },
     ola_auto: {
       label: 'Ola Auto',
@@ -120,7 +120,7 @@ function calculatePricing(distance, duration, surge) {
       minFare: 50,
       platformFee: 5,
       variability: 0.08,
-      bias: 0.65
+      bias: 0.66
     },
     rapido_bike: {
       label: 'Rapido Bike',
@@ -131,7 +131,7 @@ function calculatePricing(distance, duration, surge) {
       minFare: 35,
       platformFee: 0,
       variability: 0.08,
-      bias: 0.70
+      bias: 0.76
     }
   };
 

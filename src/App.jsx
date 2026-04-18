@@ -1,129 +1,184 @@
-import React, { useState, useCallback } from 'react';
-import Header from './components/Header';
-import PlacesInput from './components/PlacesInput';
-import ProviderCard from './components/ProviderCard';
-import RouteMap from './components/RouteMap';
-import rideWiseAPI from './services/api';
+// src/App.jsx
+import { useMemo, useState } from 'react';
+import { compareRides } from './api/ridewise.js';
+import { geocodeAddress } from './api/places.js';
+import { LocationInputs } from './components/LocationInputs.jsx';
+import { RideCard } from './components/RideCard.jsx';
+import { PickupSuggestions } from './components/PickupSuggestions.jsx';
+import { MapPanel } from './components/MapPanel.jsx';
+import { NoticeBanner } from './components/NoticeBanner.jsx';
+
+const emptyLocation = { address: '', lat: null, lng: null };
 
 export default function App() {
-  const [pickup, setPickup] = useState(null);
-  const [destination, setDestination] = useState(null);
-  const [estimates, setEstimates] = useState(null);
-  const [routeInfo, setRouteInfo] = useState(null);
+  const [pickup, setPickup] = useState(emptyLocation);
+  const [destination, setDestination] = useState(emptyLocation);
+  const [results, setResults] = useState(null);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [phase, setPhase] = useState('search'); // search | loading | results
+  const [error, setError] = useState(null);
 
-  const handleCompare = useCallback(async () => {
-    if (!pickup || !destination) return;
+  const activePickup = selectedSuggestion
+    ? { ...pickup, ...selectedSuggestion, address: selectedSuggestion.address }
+    : pickup;
+
+  const providerNotices = useMemo(() => {
+    if (!results?.providerNotices?.length) return [];
+    return results.providerNotices.flatMap((notice) =>
+      notice.notices.map((item) => `${notice.providerName}: ${item}`)
+    );
+  }, [results]);
+
+  const warningMessages = useMemo(() => {
+    if (!results?.warnings?.length) return [];
+    return results.warnings.map((warning) => `${warning.providerName}: ${warning.message}`);
+  }, [results]);
+
+  const ensureGeocoded = async (location, label) => {
+    if (typeof location.lat === 'number' && typeof location.lng === 'number') {
+      return location;
+    }
+    if (!location.address) {
+      throw new Error(`Enter a valid ${label} address.`);
+    }
+    const geocoded = await geocodeAddress(location.address);
+    if (!geocoded) {
+      throw new Error(`Unable to find ${label} location. Try a more specific address.`);
+    }
+    return { ...location, ...geocoded };
+  };
+
+  const handleCompare = async () => {
+    setError(null);
     setLoading(true);
-    setPhase('loading');
-
     try {
-      const res = await rideWiseAPI.getEstimates(pickup, destination);
-      setEstimates(res.estimates);
-      setRouteInfo(res.route);
-      setPhase('results');
+      const resolvedPickup = await ensureGeocoded(activePickup, 'pickup');
+      const resolvedDestination = await ensureGeocoded(destination, 'destination');
+
+      if (!selectedSuggestion) {
+        setPickup(resolvedPickup);
+      }
+      setDestination(resolvedDestination);
+
+      const data = await compareRides({
+        pickup: resolvedPickup,
+        destination: resolvedDestination,
+      });
+
+      setResults(data);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [pickup, destination]);
+  };
+
+  const rides = results?.rides || [];
+  const highlights = results?.highlights || {};
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg">
-      <Header />
+    <div className="min-h-screen px-6 py-10 bg-gradient-to-b from-white to-slate-50 text-slate-900">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8">
 
-      {/* ─── Search phase ─── */}
-      {phase === 'search' && (
-        <main className="flex-1 flex items-start justify-center pt-20 px-4">
-          <div className="w-full max-w-md fade-in">
-            <h1 className="text-4xl font-extrabold text-center mb-2">
-              Compare rides <span className="text-primary">instantly</span>
-            </h1>
-            <p className="text-center text-text-secondary mb-8">
-              See Uber, Ola & Rapido prices side by side before you book
-            </p>
+        {/* ─── Header ─── */}
+        <header className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">RideWise</p>
+              <h1 className="text-4xl font-semibold md:text-5xl">
+                Compare rides before you ride.
+              </h1>
+              <p className="mt-2 max-w-2xl text-base text-slate-600">
+                Live price, wait time, and reliability intelligence across providers — with smart pickup suggestions to cut the wait.
+              </p>
+            </div>
+            <div className="hidden rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 md:block">
+              MVP demo
+            </div>
+          </div>
+        </header>
 
-            <div className="glass-card p-6 space-y-4">
-              <PlacesInput
-                label="Pickup"
-                placeholder="Start location… (home, landmark, address)"
-                onSelect={setPickup}
+        {/* ─── Notices ─── */}
+        <NoticeBanner title="Provider usage notes" items={providerNotices} />
+        <NoticeBanner title="Provider fetch warnings" items={warningMessages} />
+
+        {/* ─── Search Panel ─── */}
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <LocationInputs
+            pickup={pickup}
+            destination={destination}
+            onPickupChange={(value) => {
+              setPickup(value);
+              setSelectedSuggestion(null);
+            }}
+            onDestinationChange={setDestination}
+          />
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-300"
+              onClick={handleCompare}
+              disabled={loading}
+            >
+              {loading ? 'Comparing...' : 'Compare rides'}
+            </button>
+            {error && <span className="text-sm font-semibold text-rose-600">{error}</span>}
+            {selectedSuggestion && (
+              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                Using suggested pickup
+              </span>
+            )}
+          </div>
+        </section>
+
+        {/* ─── Map + Suggestions ─── */}
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <MapPanel
+            pickup={activePickup}
+            destination={destination}
+            suggestions={results?.suggestions}
+            selectedSuggestion={selectedSuggestion}
+          />
+          <PickupSuggestions
+            suggestions={results?.suggestions}
+            selectedId={selectedSuggestion?.id}
+            onSelect={setSelectedSuggestion}
+          />
+        </section>
+
+        {/* ─── Ride Comparison ─── */}
+        <section>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Ride comparison</h2>
+            <div className="text-sm text-slate-500">
+              {rides.length ? `${rides.length} providers compared` : 'Awaiting query'}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {rides.map((ride) => (
+              <RideCard
+                key={ride.providerId}
+                ride={ride}
+                isCheapest={highlights.cheapestProviderId === ride.providerId}
+                isFastest={highlights.fastestProviderId === ride.providerId}
+                isMostReliable={highlights.mostReliableProviderId === ride.providerId}
               />
-              <PlacesInput
-                label="Destination"
-                placeholder="Where are you heading?"
-                onSelect={setDestination}
-              />
-
-              <button
-                className="btn-primary mt-2"
-                onClick={handleCompare}
-                disabled={!pickup || !destination}
-              >
-                🔍 Compare Rides
-              </button>
-
-              {/* Quick presets */}
-              <div className="text-center text-xs text-text-muted pt-2">
-                Try: "Koramangala → MG Road" or your saved home/office address
-              </div>
-            </div>
-          </div>
-        </main>
-      )}
-
-      {/* ─── Loading phase ─── */}
-      {phase === 'loading' && (
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center fade-in">
-            <div className="loading-dot mb-4"><span /><span /><span /></div>
-            <p className="text-text-secondary">Finding the best rides for you…</p>
-          </div>
-        </main>
-      )}
-
-      {/* ─── Results phase ─── */}
-      {phase === 'results' && estimates && (
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left: route info + provider cards */}
-          <div className="lg:col-span-3 space-y-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="text-xl font-bold">{pickup.name} → {destination.name}</h2>
-                <p className="text-sm text-text-secondary mt-1">
-                  {routeInfo?.distance || '—'} km · ~{routeInfo?.duration || '—'} min
-                </p>
-              </div>
-              <button onClick={() => setPhase('search')} className="text-sm text-primary font-medium">
-                Edit route
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {Object.entries(estimates).map(([k, est]) => (
-                <ProviderCard key={k} estimate={est} pickup={pickup} destination={destination} isWinner={!!est.badge} />
-              ))}
-            </div>
-
-            {/* Disclaimer */}
-            <div className="text-xs text-text-muted text-center pt-4">
-              Prices are smart estimates, not final. Always verify in the provider app before booking.
-            </div>
+            ))}
           </div>
 
-          {/* Right: map */}
-          <div className="lg:col-span-2">
-            <div className="lg:sticky lg:top-24">
-              <RouteMap pickup={pickup} destination={destination} />
+          {!rides.length && !results && (
+            <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white/70 p-10 text-center text-slate-500">
+              Enter a pickup and destination to see the best ride option.
             </div>
-          </div>
-        </main>
-      )}
+          )}
+        </section>
 
-      {/* Footer */}
-      <footer className="text-center py-6 text-xs text-text-muted border-t border-border mt-auto">
-        RideWise is independent and not affiliated with Uber, Ola, or Rapido.
-      </footer>
+        {/* ─── Footer ─── */}
+        <footer className="text-center py-4 text-xs text-slate-500">
+          RideWise is independent and not affiliated with Uber, Ola, or Rapido.
+        </footer>
+      </div>
     </div>
   );
 }

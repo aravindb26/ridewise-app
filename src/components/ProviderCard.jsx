@@ -1,7 +1,6 @@
 import React from 'react';
 
 const ProviderCard = ({ estimate, isWinner }) => {
-  // Support BOTH formats: { provider: { name, logo } } AND { label, icon }
   const name = estimate.provider?.name || estimate.label || 'Unknown';
   const logo = estimate.provider?.logo || estimate.icon || '🚗';
   const brandColor = estimate.provider?.brandColor || '#0F83C0';

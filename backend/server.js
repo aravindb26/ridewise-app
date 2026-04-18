@@ -94,7 +94,7 @@ function calculatePricing(distance, duration, surge) {
       label: 'Uber Auto',
       icon: '🟠',
       baseFare: 30,
-      perKmRate: 20,
+      perKmRate: 12,
       perMinRate: 0.8,
       minFare: 40,
       platformFee: 0,
@@ -104,9 +104,9 @@ function calculatePricing(distance, duration, surge) {
       label: 'Uber Go',
       icon: '⚫',
       baseFare: 49,
-      perKmRate: 10,
+      perKmRate: 33,
       perMinRate: 2,
-      minFare: 65,
+      minFare: 49,
       platformFee: 14,
       variability: 0.08
     },
@@ -114,8 +114,8 @@ function calculatePricing(distance, duration, surge) {
       label: 'Ola Auto',
       icon: '🟢',
       baseFare: 25,
-      perKmRate: 18,
-      perMinRate: 0.7,
+      perKmRate: 14,
+      perMinRate: 0.5,
       minFare: 35,
       platformFee: 0,
       variability: 0.10
@@ -124,11 +124,11 @@ function calculatePricing(distance, duration, surge) {
       label: 'Rapido Bike',
       icon: '🟡',
       baseFare: 15,
-      perKmRate: 5,
+      perKmRate: 4,
       perMinRate: 0.3,
       minFare: 29,
       platformFee: 0,
-      variability: 0.06
+      variability: 0.08
     }
   };
 

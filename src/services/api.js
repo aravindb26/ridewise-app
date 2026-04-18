@@ -64,6 +64,14 @@ export const rideWiseAPI = {
  */
 function transformEstimates(backendEstimates) {
   const providers = {
+    uber_auto: {
+      id: 'uber_auto',
+      name: 'Uber Auto',
+      logo: '🟠',
+      brandColor: '#FF6B00',
+      deepLinkBase: 'uber://',
+      webFallback: 'https://m.uber.com',
+    },
     uber_go: {
       id: 'uber_go',
       name: 'Uber Go',
@@ -72,21 +80,13 @@ function transformEstimates(backendEstimates) {
       deepLinkBase: 'uber://',
       webFallback: 'https://m.uber.com',
     },
-    ola_mini: {
-      id: 'ola_mini',
-      name: 'Ola Mini',
+    ola_auto: {
+      id: 'ola_auto',
+      name: 'Ola Auto',
       logo: '🟢',
       brandColor: '#06B05F',
       deepLinkBase: 'olacabs://app',
       webFallback: 'https://book.olacabs.com',
-    },
-    auto: {
-      id: 'auto',
-      name: 'Auto',
-      logo: '🟠',
-      brandColor: '#FF6B00',
-      deepLinkBase: 'uber://',
-      webFallback: 'https://m.uber.com',
     },
     rapido_bike: {
       id: 'rapido_bike',

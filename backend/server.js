@@ -88,8 +88,18 @@ function detectSurge() {
 }
 
 function calculatePricing(distance, duration, surge) {
-  // Bangalore real-world rates (2025/2026) - per ride category
+  // Bangalore 2026 pricing — calibrated: Uber Auto ₹122, Uber Go ₹236 (Indiranagar→MG Road, 7.4km, 29min)
   const providers = {
+    uber_auto: {
+      label: 'Uber Auto',
+      icon: '🟠',
+      baseFare: 30,
+      perKmRate: 20,
+      perMinRate: 0.8,
+      minFare: 40,
+      platformFee: 0,
+      variability: 0.08
+    },
     uber_go: {
       label: 'Uber Go',
       icon: '⚫',
@@ -100,33 +110,23 @@ function calculatePricing(distance, duration, surge) {
       platformFee: 14,
       variability: 0.08
     },
-    ola_mini: {
-      label: 'Ola Mini',
+    ola_auto: {
+      label: 'Ola Auto',
       icon: '🟢',
-      baseFare: 40,
-      perKmRate: 9,
-      perMinRate: 1.8,
-      minFare: 55,
-      platformFee: 10,
-      variability: 0.10
-    },
-    auto: {
-      label: 'Auto',
-      icon: '🟠',
-      baseFare: 30,
+      baseFare: 25,
       perKmRate: 18,
-      perMinRate: 0.8,
-      minFare: 40,
+      perMinRate: 0.7,
+      minFare: 35,
       platformFee: 0,
-      variability: 0.05
+      variability: 0.10
     },
     rapido_bike: {
       label: 'Rapido Bike',
       icon: '🟡',
       baseFare: 15,
       perKmRate: 5,
-      perMinRate: 0.4,
-      minFare: 30,
+      perMinRate: 0.3,
+      minFare: 29,
       platformFee: 0,
       variability: 0.06
     }

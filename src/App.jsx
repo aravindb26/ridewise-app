@@ -255,16 +255,7 @@ function App() {
                   {Object.entries(estimates).map(([key, estimate]) => (
                     <ProviderCard
                       key={key}
-                      estimate={{
-                        ...estimate,
-                        provider: {
-                          name: estimate.label,
-                          logo: estimate.icon,
-                          deepLinkBase: '',
-                          webFallback: '',
-                          brandColor: estimate.label === 'Uber Go' ? '#000000' : estimate.label === 'Ola Mini' ? '#06B05F' : estimate.label === 'Rapido Bike' ? '#FFD700' : '#FFA500'
-                        }
-                      }}
+                      estimate={estimate}
                       isWinner={!!estimate.badge}
                     />
                   ))}

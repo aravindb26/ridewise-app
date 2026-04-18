@@ -64,25 +64,33 @@ export const rideWiseAPI = {
  */
 function transformEstimates(backendEstimates) {
   const providers = {
-    ola: {
-      id: 'ola',
-      name: 'Ola',
-      logo: '🟢',
-      brandColor: '#00A86B',
-      deepLinkBase: 'olacabs://app',
-      webFallback: 'https://book.olacabs.com',
-    },
-    uber: {
-      id: 'uber',
-      name: 'Uber',
+    uber_go: {
+      id: 'uber_go',
+      name: 'Uber Go',
       logo: '⚫',
       brandColor: '#000000',
       deepLinkBase: 'uber://',
       webFallback: 'https://m.uber.com',
     },
-    rapido: {
-      id: 'rapido',
-      name: 'Rapido',
+    ola_mini: {
+      id: 'ola_mini',
+      name: 'Ola Mini',
+      logo: '🟢',
+      brandColor: '#06B05F',
+      deepLinkBase: 'olacabs://app',
+      webFallback: 'https://book.olacabs.com',
+    },
+    auto: {
+      id: 'auto',
+      name: 'Auto',
+      logo: '🟠',
+      brandColor: '#FF6B00',
+      deepLinkBase: 'uber://',
+      webFallback: 'https://m.uber.com',
+    },
+    rapido_bike: {
+      id: 'rapido_bike',
+      name: 'Rapido Bike',
       logo: '🟡',
       brandColor: '#FFD500',
       deepLinkBase: 'rapido://',
@@ -95,13 +103,18 @@ function transformEstimates(backendEstimates) {
   Object.keys(backendEstimates).forEach(providerKey => {
     const estimate = backendEstimates[providerKey];
     transformed[providerKey] = {
-      provider: providers[providerKey],
+      provider: providers[providerKey] || {
+        id: providerKey,
+        name: providerKey,
+        logo: '🚗',
+        brandColor: '#0F83C0',
+      },
       priceMin: estimate.priceMin,
       priceMax: estimate.priceMax,
       etaMin: estimate.etaMin,
       etaMax: estimate.etaMax,
       badge: estimate.badge || null,
-      isEstimated: false, // Using real Google Maps data
+      isEstimated: false,
       isSurge: !!estimate.surge,
       surgeMultiplier: estimate.surge ? estimate.surge.multiplier : 1.0,
       surgeReason: estimate.surge ? estimate.surge.reason : null

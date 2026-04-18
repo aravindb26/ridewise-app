@@ -9,6 +9,7 @@ export default function App() {
   const [pickup, setPickup] = useState(null);
   const [destination, setDestination] = useState(null);
   const [estimates, setEstimates] = useState(null);
+  const [routeInfo, setRouteInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [phase, setPhase] = useState('search'); // search | loading | results
 
@@ -20,6 +21,7 @@ export default function App() {
     try {
       const res = await rideWiseAPI.getEstimates(pickup, destination);
       setEstimates(res.estimates);
+      setRouteInfo(res.route);
       setPhase('results');
     } finally {
       setLoading(false);
@@ -89,7 +91,7 @@ export default function App() {
               <div>
                 <h2 className="text-xl font-bold">{pickup.name} → {destination.name}</h2>
                 <p className="text-sm text-text-secondary mt-1">
-                  {estimates.routeInfo?.distance || '—'} km · ~{estimates.routeInfo?.duration || '—'} min
+                  {routeInfo?.distance || '—'} km · ~{routeInfo?.duration || '—'} min
                 </p>
               </div>
               <button onClick={() => setPhase('search')} className="text-sm text-primary font-medium">

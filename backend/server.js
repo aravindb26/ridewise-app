@@ -88,74 +88,82 @@ function detectSurge() {
 }
 
 function calculatePricing(distance, duration, surge) {
-  // Bangalore 2026 pricing — calibrated: Uber Auto ₹122, Uber Go ₹236 (Indiranagar→MG Road, 7.4km, 29min)
   const providers = {
     uber_auto: {
       label: 'Uber Auto',
       icon: '🟠',
-      baseFare: 30,
-      perKmRate: 7,
-      perMinRate: 0.7,
-      minFare: 35,
-      platformFee: 0,
-      variability: 0.08
+      baseFare: 35,
+      perKmRate: 11.5,
+      perMinRate: 1.1,
+      minFare: 45,
+      platformFee: 10,
+      variability: 0.06,
+      bias: 0.63
     },
     uber_go: {
       label: 'Uber Go',
       icon: '⚫',
-      baseFare: 25,
-      perKmRate: 10,
-      perMinRate: 1.5,
-      minFare: 45,
-      platformFee: 14,
-      variability: 0.08
+      baseFare: 45,
+      perKmRate: 8.5,
+      perMinRate: 1.6,
+      minFare: 60,
+      platformFee: 15,
+      variability: 0.06,
+      bias: 0.78
     },
     ola_auto: {
       label: 'Ola Auto',
       icon: '🟢',
-      baseFare: 20,
-      perKmRate: 6,
-      perMinRate: 1.0,
-      minFare: 30,
-      platformFee: 0,
-      variability: 0.10
+      baseFare: 40,
+      perKmRate: 12,
+      perMinRate: 1.2,
+      minFare: 50,
+      platformFee: 5,
+      variability: 0.08,
+      bias: 0.65
     },
     rapido_bike: {
       label: 'Rapido Bike',
       icon: '🟡',
-      baseFare: 15,
-      perKmRate: 3,
-      perMinRate: 0.2,
-      minFare: 29,
+      baseFare: 20,
+      perKmRate: 7,
+      perMinRate: 0.5,
+      minFare: 35,
       platformFee: 0,
-      variability: 0.08
+      variability: 0.08,
+      bias: 0.70
     }
   };
 
   const estimates = {};
-  
-  Object.entries(providers).forEach(([key, config]) => {
-    let basePrice = config.baseFare + (distance * config.perKmRate) + (duration * config.perMinRate) + config.platformFee;
-    basePrice = Math.max(basePrice, config.minFare);
-    basePrice *= surge.multiplier;
-    
+
+  for (const key in providers) {
+    const p = providers[key];
+    let price = p.baseFare + (distance * p.perKmRate) + (duration * p.perMinRate) + p.platformFee;
+    price = Math.max(price, p.minFare);
+    price *= surge.multiplier;
+    price *= p.bias;
+
+    const priceMin = Math.round(price * (1 - p.variability));
+    const priceMax = Math.round(price * (1 + p.variability));
+
     estimates[key] = {
-      label: config.label,
-      icon: config.icon,
-      priceMin: Math.round(basePrice * (1 - config.variability)),
-      priceMax: Math.round(basePrice * (1 + config.variability)),
+      label: p.label,
+      icon: p.icon,
+      priceMin,
+      priceMax,
       etaMin: Math.floor(duration * 0.8),
       etaMax: Math.ceil(duration * 1.2),
       surge: surge.active ? { multiplier: surge.multiplier, reason: surge.reason } : null
     };
-  });
-  
+  }
+
   const sortedByPrice = Object.entries(estimates).sort((a, b) => ((a[1].priceMin + a[1].priceMax) / 2) - ((b[1].priceMin + b[1].priceMax) / 2));
   const sortedByEta = Object.entries(estimates).sort((a, b) => ((a[1].etaMin + a[1].etaMax) / 2) - ((b[1].etaMin + b[1].etaMax) / 2));
-  
+
   estimates[sortedByPrice[0][0]].badge = 'Cheapest';
   estimates[sortedByEta[0][0]].badge = 'Fastest';
-  
+
   return estimates;
 }
 

@@ -3,7 +3,7 @@ import React from 'react';
 const ProviderCard = ({ estimate, isWinner }) => {
   const name = estimate.provider?.name || estimate.label || 'Unknown';
   const logo = estimate.provider?.logo || estimate.icon || '🚗';
-  const brandColor = estimate.provider?.brandColor || '#0F83C0';
+  const brandColor = estimate.provider?.brandColor || '#276EF1';
 
   const priceMin = estimate.priceMin;
   const priceMax = estimate.priceMax;

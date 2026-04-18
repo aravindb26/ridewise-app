@@ -76,7 +76,7 @@ function transformEstimates(backendEstimates) {
       id: 'uber_go',
       name: 'Uber Go',
       logo: '⚫',
-      brandColor: '#000000',
+      brandColor: '#276EF1',
       deepLinkBase: 'uber://',
       webFallback: 'https://m.uber.com',
     },

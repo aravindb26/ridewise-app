@@ -20,7 +20,7 @@ app.get('/api/places/autocomplete', async (req, res) => {
       params: {
         input,
         key: GOOGLE_MAPS_API_KEY,
-        types: ['(cities)'],
+        types: ['geocode', 'establishment'],
         componentRestrictions: { country: 'in' },
         language: 'en',
       },
@@ -196,6 +196,4 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`RideWise Backend on port ${PORT}`);
 });
-SERVEROF
 
-echo "✅ server.js rebuilt"
